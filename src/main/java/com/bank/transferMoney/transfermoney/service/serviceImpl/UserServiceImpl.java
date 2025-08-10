@@ -1,45 +1,67 @@
 package com.bank.transferMoney.transfermoney.service.serviceImpl;
 
-import com.bank.transferMoney.transfermoney.dto.ApiResponseDto;
-import com.bank.transferMoney.transfermoney.dto.RegisterDto;
-import com.bank.transferMoney.transfermoney.dto.RegisterResponse;
+import com.bank.transferMoney.transfermoney.dto.*;
 import com.bank.transferMoney.transfermoney.entity.User;
+import com.bank.transferMoney.transfermoney.enumeration.Role;
+import com.bank.transferMoney.transfermoney.enumeration.Status;
 import com.bank.transferMoney.transfermoney.exceptoin.DuplicateException;
+import com.bank.transferMoney.transfermoney.exceptoin.HandleException;
 import com.bank.transferMoney.transfermoney.mapper.UserMapper;
 import com.bank.transferMoney.transfermoney.repository.UserRepository;
+import com.bank.transferMoney.transfermoney.security.CustomUserDetails;
+import com.bank.transferMoney.transfermoney.security.JwtGenerator;
 import com.bank.transferMoney.transfermoney.service.UserService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private UserMapper userMapper;
+
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtGenerator jwtGenerator;
 
     @Override
     public ResponseEntity<ApiResponseDto<RegisterResponse>> signup(RegisterDto registerDto) {
-        Optional<User> existingUser = userRepository.findByEmail(registerDto.getEmail());
+        log.info("Signup request received for email: {}", registerDto.getEmail());
 
-        if (existingUser.isPresent()) {
+        userRepository.findByEmail(registerDto.getEmail()).ifPresent(user -> {
             log.warn("Signup failed: Email already exists - {}", registerDto.getEmail());
             throw new DuplicateException("Sorry, Email already exists");
-        }
+        });
+        log.debug("No existing user found with email: {}", registerDto.getEmail());
+
 
         User user = userMapper.toEntity(registerDto);
+        log.debug("Mapped RegisterDto to User entity: {}", user);
+
+
         user.setAccountBalance(2500.00);
-        user.setAccountNumber("123456789");
-        user.setStatus("true");
+        user.setAccountNumber(generateAccountNumber());
+        user.setStatus(Status.ACTIVE);
+        user.setCreatedAt(java.time.LocalDateTime.now());
 
+        log.info("Saving user: {} {} with account number {}", user.getFirstName(), user.getLastName(), user.getAccountNumber());
+
+        String encodedPassword = passwordEncoder.encode(registerDto.getPassword());
+        user.setPassword(encodedPassword);
+        user.setRole(Role.USER);
         userRepository.save(user);
-
+        log.info("User saved successfully: {}", user.getEmail());
 
         RegisterResponse response = RegisterResponse.builder()
                 .fullName(user.getFirstName() + " " + user.getLastName())
@@ -49,10 +71,59 @@ public class UserServiceImpl implements UserService {
 
         ApiResponseDto<RegisterResponse> apiResponseDto = ApiResponseDto.<RegisterResponse>builder()
                 .status("success")
-                .message("Welcome To Bank" + user.getFirstName())
+                .message("Welcome To Bank, " + user.getFirstName())
                 .data(response)
                 .build();
 
-        return new ResponseEntity<>(apiResponseDto, HttpStatus.OK);
+        log.info("Signup process completed successfully for email: {}", user.getEmail());
+
+        return ResponseEntity.ok(apiResponseDto);
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDto<LoginResponse>> login(LoginRequest loginRequest) {
+        log.info("Login Method is Started");
+        String email = loginRequest.getEmail();
+        String password = loginRequest.getPassword();
+
+        Authentication authentication;
+        try {
+            UsernamePasswordAuthenticationToken authToken =
+                    UsernamePasswordAuthenticationToken.unauthenticated(email, password);
+
+            authentication = authenticationManager.authenticate(authToken);
+
+            log.info("Authentication successful for email: {}", email);
+
+        } catch (BadCredentialsException e) {
+            log.warn("Wrong password for email: {}", email);
+            throw new HandleException("Incorrect Password");
+        }
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String jwtToken = jwtGenerator.generateToken(userDetails, userDetails.getRole().name());
+        log.info("JWT generated for user: {} with role: {}", userDetails.getUsername(), userDetails.getRole().name());
+
+        String welcomeMessage = "Welcome Back, " + userDetails.getName().toUpperCase();
+        LoginResponse loginResponse = LoginResponse.builder()
+                .message(welcomeMessage)
+                .token(jwtToken)
+                .build();
+
+        ApiResponseDto<LoginResponse> response = ApiResponseDto.<LoginResponse>builder()
+                .status("success")
+                .message("Login successful!")
+                .data(loginResponse)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    private String generateAccountNumber() {
+        String accountNumber = String.valueOf(System.currentTimeMillis()).substring(3);
+        log.debug("Generated account number: {}", accountNumber);
+        return accountNumber;
     }
 }

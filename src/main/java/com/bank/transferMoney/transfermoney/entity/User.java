@@ -1,6 +1,8 @@
 package com.bank.transferMoney.transfermoney.entity;
 
 import com.bank.transferMoney.transfermoney.enumeration.Gender;
+import com.bank.transferMoney.transfermoney.enumeration.Role;
+import com.bank.transferMoney.transfermoney.enumeration.Status;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,7 +14,6 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
@@ -37,7 +38,12 @@ public class User {
     private String phoneNumber;
     private String email;
     private String password;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @CreationTimestamp
     @Column(updatable = false)

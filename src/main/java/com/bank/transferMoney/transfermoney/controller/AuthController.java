@@ -1,10 +1,9 @@
 package com.bank.transferMoney.transfermoney.controller;
 
-import com.bank.transferMoney.transfermoney.dto.ApiResponseDto;
-import com.bank.transferMoney.transfermoney.dto.RegisterDto;
-import com.bank.transferMoney.transfermoney.dto.RegisterResponse;
+import com.bank.transferMoney.transfermoney.dto.*;
 import com.bank.transferMoney.transfermoney.service.UserService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,12 +11,17 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/v1/user")
-public class authController {
-    @Autowired
+@RequiredArgsConstructor
+public class AuthController {
     private UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponseDto<RegisterResponse>> register(@Valid @RequestBody RegisterDto registerDto){
         return userService.signup(registerDto);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponseDto<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest){
+        return userService.login(loginRequest);
     }
 }
