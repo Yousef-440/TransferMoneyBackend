@@ -14,13 +14,11 @@ import com.bank.transferMoney.transfermoney.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -106,9 +104,12 @@ public class UserServiceImpl implements UserService {
         log.info("JWT generated for user: {} with role: {}", userDetails.getUsername(), userDetails.getRole().name());
 
         String welcomeMessage = "Welcome Back, " + userDetails.getName().toUpperCase();
+        String firstName = userDetails.getName();
         LoginResponse loginResponse = LoginResponse.builder()
+                .firstName(firstName)
                 .message(welcomeMessage)
                 .token(jwtToken)
+                .balance(userDetails.getCurrentBalance())
                 .build();
 
         ApiResponseDto<LoginResponse> response = ApiResponseDto.<LoginResponse>builder()

@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class LoginResponse {
+    private String firstName;
     private String message;
     private String token;
+    private Double balance;
 }

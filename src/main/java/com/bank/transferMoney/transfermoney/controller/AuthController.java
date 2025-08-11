@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/api/v1/user")
 @RequiredArgsConstructor
 public class AuthController {
-    private UserService userService;
+    private final UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponseDto<RegisterResponse>> register(@Valid @RequestBody RegisterDto registerDto){
@@ -23,5 +23,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponseDto<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest){
         return userService.login(loginRequest);
+    }
+
+    @GetMapping(path = "/test")
+    public ResponseEntity<String> test(){
+        return ResponseEntity.ok("Welcome");
     }
 }

@@ -71,4 +71,13 @@ public class JwtGenerator {
         claims.put("role", role);
         return createToken(userDetails, claims);
     }
+
+    private Boolean isTokenExpired(String token){
+        return extractExpiration(token).before(new Date());
+    }
+
+    public Boolean validateToken(String token, UserDetails userDetails){
+        final String name = extractUsername(token);
+        return (name.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
 }
