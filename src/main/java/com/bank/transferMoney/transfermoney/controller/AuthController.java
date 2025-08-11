@@ -4,7 +4,6 @@ import com.bank.transferMoney.transfermoney.dto.*;
 import com.bank.transferMoney.transfermoney.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,10 +22,5 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponseDto<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest){
         return userService.login(loginRequest);
-    }
-
-    @GetMapping(path = "/test")
-    public ResponseEntity<String> test(){
-        return ResponseEntity.ok("Welcome");
     }
 }

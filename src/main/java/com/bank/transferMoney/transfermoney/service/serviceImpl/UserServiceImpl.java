@@ -11,6 +11,7 @@ import com.bank.transferMoney.transfermoney.repository.UserRepository;
 import com.bank.transferMoney.transfermoney.security.CustomUserDetails;
 import com.bank.transferMoney.transfermoney.security.JwtGenerator;
 import com.bank.transferMoney.transfermoney.service.UserService;
+import com.bank.transferMoney.transfermoney.utils.AccountNumberGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtGenerator jwtGenerator;
+    private final AccountNumberGenerator accountNumberGenerator;
 
     @Override
     public ResponseEntity<ApiResponseDto<RegisterResponse>> signup(RegisterDto registerDto) {
@@ -49,22 +51,19 @@ public class UserServiceImpl implements UserService {
 
 
         user.setAccountBalance(2500.00);
-        user.setAccountNumber(generateAccountNumber());
+        user.setAccountNumber(accountNumberGenerator.generateAccountNumber());
         user.setStatus(Status.ACTIVE);
-        user.setCreatedAt(java.time.LocalDateTime.now());
-
-        log.info("Saving user: {} {} with account number {}", user.getFirstName(), user.getLastName(), user.getAccountNumber());
-
         String encodedPassword = passwordEncoder.encode(registerDto.getPassword());
         user.setPassword(encodedPassword);
         user.setRole(Role.USER);
         userRepository.save(user);
+
         log.info("User saved successfully: {}", user.getEmail());
 
         RegisterResponse response = RegisterResponse.builder()
                 .fullName(user.getFirstName() + " " + user.getLastName())
                 .createdAt(user.getCreatedAt())
-                .message("Welcome To Yousef-Bank")
+                .message("Welcome To CS-Bank")
                 .build();
 
         ApiResponseDto<RegisterResponse> apiResponseDto = ApiResponseDto.<RegisterResponse>builder()
@@ -119,12 +118,5 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         return ResponseEntity.ok(response);
-    }
-
-
-    private String generateAccountNumber() {
-        String accountNumber = String.valueOf(System.currentTimeMillis()).substring(3);
-        log.debug("Generated account number: {}", accountNumber);
-        return accountNumber;
     }
 }
