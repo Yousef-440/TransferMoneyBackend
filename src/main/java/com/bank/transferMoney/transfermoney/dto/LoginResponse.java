@@ -14,4 +14,5 @@ public class LoginResponse {
     private String message;
     private String token;
     private Double balance;
+    private String accountNumber;
 }

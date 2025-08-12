@@ -43,6 +43,10 @@ public class CustomUserDetails implements UserDetails {
         return user.getAccountBalance();
     }
 
+    public String getAccountNumber(){
+        return user.getAccountNumber();
+    }
+
     @Override
     public String getUsername() {
         return user.getEmail();

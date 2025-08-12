@@ -109,6 +109,7 @@ public class UserServiceImpl implements UserService {
                 .message(welcomeMessage)
                 .token(jwtToken)
                 .balance(userDetails.getCurrentBalance())
+                .accountNumber(userDetails.getAccountNumber())
                 .build();
 
         ApiResponseDto<LoginResponse> response = ApiResponseDto.<LoginResponse>builder()
