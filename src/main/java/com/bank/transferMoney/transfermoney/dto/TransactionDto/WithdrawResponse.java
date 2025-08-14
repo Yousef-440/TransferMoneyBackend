@@ -1,25 +1,28 @@
 package com.bank.transferMoney.transfermoney.dto.TransactionDto;
 
 import com.bank.transferMoney.transfermoney.enumeration.TransactionStatus;
-import com.bank.transferMoney.transfermoney.enumeration.TransactionType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DepositResponse {
+@Builder
+public class WithdrawResponse {
     private String accountNumber;
-    private String accountName;
-    private BigDecimal depositedAmount;
-    private BigDecimal newBalance;
-    private TransactionType transactionType;
+    private BigDecimal withdrawnAmount;
+    private BigDecimal balanceAfter;
     private TransactionStatus status;
-    private LocalDateTime transactionDate;
+    private String message;
+
+    @CreationTimestamp
+    @JsonFormat(pattern = "dd-MM-yyyy, HH:mm")
+    private LocalDateTime timestamp;
 }

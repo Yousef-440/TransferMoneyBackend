@@ -6,5 +6,5 @@ import org.springframework.http.ResponseEntity;
 public interface UserService {
     ResponseEntity<ApiResponseDto<RegisterResponse>> signup(RegisterDto registerDto);
 
-    ResponseEntity<ApiResponseDto<LoginResponse>> login(LoginRequest loginRequest);
+    ResponseEntity<ApiResponseDto<LoginBankResponse>> login(LoginRequest loginRequest);
 }

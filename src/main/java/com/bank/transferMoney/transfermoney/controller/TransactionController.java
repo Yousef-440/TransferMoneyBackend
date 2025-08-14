@@ -1,11 +1,10 @@
 package com.bank.transferMoney.transfermoney.controller;
 
 import com.bank.transferMoney.transfermoney.dto.ApiResponseDto;
-import com.bank.transferMoney.transfermoney.dto.TransactionDto.BalanceCheckRequest;
-import com.bank.transferMoney.transfermoney.dto.TransactionDto.DepositRequest;
-import com.bank.transferMoney.transfermoney.dto.TransactionDto.DepositResponse;
+import com.bank.transferMoney.transfermoney.dto.TransactionDto.*;
 import com.bank.transferMoney.transfermoney.repository.UserRepository;
 import com.bank.transferMoney.transfermoney.service.TransactionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -29,5 +28,10 @@ public class TransactionController {
     public ResponseEntity<ApiResponseDto<String>> balance(@RequestParam("account") String account) {
         log.info("balance endpoint started");
         return transactionService.checkBalance(account);
+    }
+
+    @PostMapping(path = "/withdraw")
+    public ResponseEntity<ApiResponseDto<?>> withdraw(@Valid @RequestBody WithdrawRequest withdrawRequest){
+        return transactionService.withdrawMoney(withdrawRequest);
     }
 }

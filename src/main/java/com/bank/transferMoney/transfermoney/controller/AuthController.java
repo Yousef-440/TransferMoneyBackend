@@ -20,7 +20,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponseDto<LoginResponse>> login(@Valid @RequestBody LoginRequest loginRequest){
+    public ResponseEntity<ApiResponseDto<LoginBankResponse>> login(@Valid @RequestBody LoginRequest loginRequest){
         return userService.login(loginRequest);
     }
 }

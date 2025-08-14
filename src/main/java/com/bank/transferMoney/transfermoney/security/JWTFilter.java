@@ -21,37 +21,51 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
     private final JwtGenerator jwtGenerator;
-    private final CustomUserDetailsService userDetails;
+    private final CustomUserDetailsService userDetailsService;
 
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String header = request.getHeader("Authorization");
+            log.info("Authorization header: {}", header);
 
-            if(StringUtils.hasText(header) && header.startsWith("Bearer ")){
+            if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
                 String token = header.substring(7);
-                String username =jwtGenerator.extractUsername(token);
+                log.info("Extracted token: {}", token);
 
-                if(username != null){
-                    UserDetails userDetails1 =userDetails.loadUserByUsername(username);
+                String username = jwtGenerator.extractUsername(token);
+                log.info("Extracted username/email from token: {}", username);
 
-                    if(jwtGenerator.validateToken(token, userDetails1)){
+                if (username != null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    log.info("Loaded user details: {}", userDetails.getUsername());
+
+                    if (jwtGenerator.validateToken(token, userDetails)) {
                         UsernamePasswordAuthenticationToken authenticationToken =
                                 new UsernamePasswordAuthenticationToken(
-                                        userDetails1,
+                                        userDetails,
                                         null,
-                                        userDetails1.getAuthorities()
+                                        userDetails.getAuthorities()
                                 );
                         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);                    }
+                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
+                        log.info("Authentication set in SecurityContext for user: {}", userDetails.getUsername());
+                    } else {
+                        log.warn("Token validation failed");
+                    }
                 }
+            } else {
+                log.warn("Authorization header missing or invalid");
             }
         }catch (Exception ex){
-            log.error("JWT Filter Error");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\n\t \"error\": \"Invalid or expired token\"\n}");
+            log.info("Error JWT");
+            throw new RuntimeException("Invalid or expired token", ex);
+//            log.error("JWT Filter Error");
+//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//            response.getWriter().write("{\n\t \"error\": \"Invalid or expired token\"\n}");
+
         }
         filterChain.doFilter(request, response);
     }

@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Builder
-public class LoginResponse {
+public class LoginBankResponse {
     private String firstName;
     private String message;
     private String token;

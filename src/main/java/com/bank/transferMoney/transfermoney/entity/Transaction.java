@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
@@ -29,7 +30,7 @@ public class Transaction {
     @JoinColumn(name = "receiver_id")
     private User receiver;
 
-    private Double amount;
+    private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;

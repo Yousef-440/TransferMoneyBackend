@@ -8,13 +8,12 @@ import com.bank.transferMoney.transfermoney.exceptoin.DuplicateException;
 import com.bank.transferMoney.transfermoney.exceptoin.HandleException;
 import com.bank.transferMoney.transfermoney.mapper.UserMapper;
 import com.bank.transferMoney.transfermoney.repository.UserRepository;
-import com.bank.transferMoney.transfermoney.security.CustomUserDetails;
+import com.bank.transferMoney.transfermoney.security.DetailsUser;
 import com.bank.transferMoney.transfermoney.security.JwtGenerator;
 import com.bank.transferMoney.transfermoney.service.UserService;
 import com.bank.transferMoney.transfermoney.utils.AccountNumberGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -23,11 +22,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@Service
-@Slf4j
-@RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+import java.math.BigDecimal;
 
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class UserServiceAuthImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
         log.debug("Mapped RegisterDto to User entity: {}", user);
 
 
-        user.setAccountBalance(2500.00);
+        user.setAccountBalance(BigDecimal.ZERO);
         user.setAccountNumber(accountNumberGenerator.generateAccountNumber());
         user.setStatus(Status.ACTIVE);
         String encodedPassword = passwordEncoder.encode(registerDto.getPassword());
@@ -74,11 +74,12 @@ public class UserServiceImpl implements UserService {
 
         log.info("Signup process completed successfully for email: {}", user.getEmail());
 
+
         return ResponseEntity.ok(apiResponseDto);
     }
 
     @Override
-    public ResponseEntity<ApiResponseDto<LoginResponse>> login(LoginRequest loginRequest) {
+    public ResponseEntity<ApiResponseDto<LoginBankResponse>> login(LoginRequest loginRequest) {
         log.info("Login Method is Started");
         String email = loginRequest.getEmail();
         String password = loginRequest.getPassword();
@@ -86,7 +87,7 @@ public class UserServiceImpl implements UserService {
         Authentication authentication;
         try {
             UsernamePasswordAuthenticationToken authToken =
-                    UsernamePasswordAuthenticationToken.unauthenticated(email, password);
+                    new UsernamePasswordAuthenticationToken(email, password);
 
             authentication = authenticationManager.authenticate(authToken);
 
@@ -97,22 +98,24 @@ public class UserServiceImpl implements UserService {
             throw new HandleException("Incorrect Password");
         }
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        DetailsUser userDetails = (DetailsUser) authentication.getPrincipal();
 
         String jwtToken = jwtGenerator.generateToken(userDetails, userDetails.getRole().name());
         log.info("JWT generated for user: {} with role: {}", userDetails.getUsername(), userDetails.getRole().name());
 
         String welcomeMessage = "Welcome Back, " + userDetails.getName().toUpperCase();
         String firstName = userDetails.getName();
-        LoginResponse loginResponse = LoginResponse.builder()
+
+        LoginBankResponse loginResponse = LoginBankResponse.builder()
                 .firstName(firstName)
                 .message(welcomeMessage)
                 .token(jwtToken)
-                .balance(userDetails.getCurrentBalance())
+                .balance(userDetails.getBalance())
                 .accountNumber(userDetails.getAccountNumber())
                 .build();
 
-        ApiResponseDto<LoginResponse> response = ApiResponseDto.<LoginResponse>builder()
+
+        ApiResponseDto<LoginBankResponse> response = ApiResponseDto.<LoginBankResponse>builder()
                 .status("success")
                 .message("Login successful!")
                 .data(loginResponse)
@@ -121,3 +124,5 @@ public class UserServiceImpl implements UserService {
         return ResponseEntity.ok(response);
     }
 }
+
+

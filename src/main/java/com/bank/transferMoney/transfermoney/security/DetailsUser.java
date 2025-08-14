@@ -1,19 +1,19 @@
 package com.bank.transferMoney.transfermoney.security;
 
+
 import com.bank.transferMoney.transfermoney.entity.User;
 import com.bank.transferMoney.transfermoney.enumeration.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
-
-public class CustomUserDetails implements UserDetails {
+public class DetailsUser implements UserDetails {
     private final User user;
-
-    public CustomUserDetails(User user) {
+    public DetailsUser(User user){
         this.user = user;
     }
 
@@ -24,10 +24,16 @@ public class CustomUserDetails implements UserDetails {
     public String getEmail() {
         return user.getEmail();
     }
-
+    public BigDecimal getBalance(){
+        return user.getAccountBalance();
+    }
+    public String getAccountNumber(){
+        return user.getAccountNumber();
+    }
     public Role getRole() {
         return user.getRole();
     }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -39,17 +45,28 @@ public class CustomUserDetails implements UserDetails {
         return user.getPassword();
     }
 
-    public Double getCurrentBalance(){
-        return user.getAccountBalance();
-    }
-
-    public String getAccountNumber(){
-        return user.getAccountNumber();
+    @Override
+    public String getUsername() {
+        return user.getFirstName();
     }
 
     @Override
-    public String getUsername() {
-        return user.getEmail();
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
     }
 
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
+    }
 }

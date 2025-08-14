@@ -14,6 +14,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
@@ -34,7 +35,9 @@ public class User {
     private Gender gender;
     private String address;
     private String accountNumber;
-    private Double accountBalance;
+    @Column(nullable = false)
+    private BigDecimal accountBalance = BigDecimal.ZERO;
+
     private String phoneNumber;
     private String email;
     private String password;
