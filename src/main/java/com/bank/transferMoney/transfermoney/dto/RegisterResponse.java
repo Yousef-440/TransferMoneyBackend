@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public class RegisterResponse {
     private String message;
+    private String fistName;
     private String fullName;
     private LocalDateTime createdAt;
 }

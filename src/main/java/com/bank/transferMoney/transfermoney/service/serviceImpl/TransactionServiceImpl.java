@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -141,6 +142,33 @@ public class TransactionServiceImpl implements TransactionService {
                 .status("success")
                 .message("withdrawn successfully")
                 .data(withdrawResponse)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @Override
+    public ResponseEntity<ApiResponseDto<List<TransactionSendResponse>>> getTransactions(String account) {
+        log.info("getTransaction Method isStarted");
+        User user = userRepository.findByAccountNumber(account)
+                .orElseThrow(()->new HandleException("User not Found"));
+
+        List<Transaction> transactionList = transactionRepository.findByReceiver(user);
+
+        List<TransactionSendResponse> transactionSendResponse = transactionList.stream()
+                .map(transaction -> TransactionSendResponse.builder()
+                        .id(user.getId())
+                        .amount(transaction.getAmount())
+                        .transactionType(transaction.getTransactionType())
+                        .transactionStatus(transaction.getStatus())
+                        .transactionDate(transaction.getTransactionDate())
+                        .build())
+                .toList();
+
+        ApiResponseDto<List<TransactionSendResponse>> responseDto = ApiResponseDto.<List<TransactionSendResponse>>builder()
+                .status("success")
+                .message("Transaction Send Successfully")
+                .data(transactionSendResponse)
                 .build();
 
         return ResponseEntity.ok(responseDto);

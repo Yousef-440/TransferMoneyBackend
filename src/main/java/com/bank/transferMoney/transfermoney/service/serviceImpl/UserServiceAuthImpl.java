@@ -61,6 +61,7 @@ public class UserServiceAuthImpl implements UserService {
         log.info("User saved successfully: {}", user.getEmail());
 
         RegisterResponse response = RegisterResponse.builder()
+                .fistName(user.getFirstName())
                 .fullName(user.getFirstName() + " " + user.getLastName())
                 .createdAt(user.getCreatedAt())
                 .message("Welcome To CS-Bank")
